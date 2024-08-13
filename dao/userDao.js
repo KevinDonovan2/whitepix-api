@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db/db');
+require('dotenv').config(); // Charge les variables d'environnement à partir du fichier .env
 
 const getUsers = async () => {
     const result = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
@@ -35,14 +36,26 @@ const deleteUser = async (id) => {
 };
 
 const authenticateUser = async (email, password) => {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const user = result.rows[0];
-    if (user && await bcrypt.compare(password, user.password)) {
-        const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
-        return { token, user };
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = result.rows[0];
+        
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (passwordMatch) {
+            const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            return { token, user };
+        } else {
+            throw new Error('Authentication failed');
+        }
+    } catch (error) {
+        throw new Error('Authentication failed');
     }
-    throw new Error('Authentication failed');
 };
+
 
 module.exports = {
     getUsers,
