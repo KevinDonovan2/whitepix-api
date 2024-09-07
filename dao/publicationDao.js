@@ -2,7 +2,7 @@ const pool = require('../db/db');
 
 // Récupérer toutes les publications
 const getPublications = async () => {
-  const result = await pool.query('SELECT * FROM publications ORDER BY id ASC;');
+  const result = await pool.query('SELECT * FROM publications ORDER BY id DESC;');
   return result.rows;
 };
 
