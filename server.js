@@ -28,35 +28,36 @@ app.use('/users', userRoutes);
 app.use('/publications', publicationRoutes);
 app.use('/messages', messageRoutes);
 
-// Écouter les connexions Socket.IO
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
-  // Gérer les messages entrants
+  socket.on('joinConversation', ({ userId1, userId2 }) => {
+    const room = [userId1, userId2].sort().join('-'); // Utiliser un nom de salle unique pour chaque conversation
+    socket.join(room);
+    console.log(`Utilisateur ${socket.id} a rejoint la salle: ${room}`);
+  });
+
   socket.on('sendMessage', async (messageData) => {
     try {
-      // Sauvegarder le message dans la base de données
       const newMessage = await messageDao.createMessage(
-        messageData.userId,
-        messageData.avatar,
-        messageData.name,
+        messageData.userIdSource,
+        messageData.userIdDestinataire,
         messageData.message
       );
 
-      // Envoyer le message à tous les clients connectés
-      io.emit('receiveMessage', newMessage);
+      const room = [messageData.userIdSource, messageData.userIdDestinataire].sort().join('-');
+      io.to(room).emit('receiveMessage', newMessage);
     } catch (err) {
-      console.error('Error saving message:', err);
+      console.error('Erreur lors de l\'envoi du message:', err);
     }
   });
 
-  // Gérer la déconnexion
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
 });
 
-// Remplacer app.listen par server.listen
+
 server.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });

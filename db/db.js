@@ -7,7 +7,7 @@ const pool = new Pool({
   host: 'localhost',
   password: '2023',
   port: 5432,
-  database: 'whitepix', // Assurez-vous de spécifier la base de données ici
+  database: 'whitepix', 
 });
 
 const createDatabaseIfNotExists = async () => {
@@ -28,11 +28,10 @@ const createDatabaseIfNotExists = async () => {
       console.log(`La base de données '${dbName}' existe déjà.`);
     }
   } finally {
-    client.end(); // Fermer la connexion une fois la vérification terminée
+    client.end(); 
   }
 };
 
-// Vérifier et créer la base de données si nécessaire
 createDatabaseIfNotExists();
 
 module.exports = pool;

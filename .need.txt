@@ -1,0 +1,8 @@
+- migrate this on prisma 
+- need to fix : dois pouvoir supporter plusieur utilisateur connecter simultanement en meme temps , 
+- seule son propre publication qu'il peux effacer ça (else enleve l'icon delete et
+    change en une icon enregistrer)
+- changer l'affichage de la date en une lettre le mois et non des chiffres (dd/mm/yy)
+-Ajouter une reaction-counts : number , comment-count (si je modifie la structure de ma table publications 
+    est ce que tous les donnes serons effacer?)
+-

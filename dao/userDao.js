@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db/db');
-require('dotenv').config(); // Charge les variables d'environnement à partir du fichier .env
+require('dotenv').config();
 
 const getUsers = async () => {
     const result = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
@@ -47,7 +47,15 @@ const authenticateUser = async (email, password) => {
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (passwordMatch) {
             const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            return { token, user };
+            return { 
+                token, 
+                user: { 
+                    id: user.id, 
+                    email: user.email, 
+                    name: user.name, 
+                    photo: user.photo  
+                } 
+            };
         } else {
             throw new Error('Authentication failed');
         }
@@ -55,6 +63,7 @@ const authenticateUser = async (email, password) => {
         throw new Error('Authentication failed');
     }
 };
+
 
 
 module.exports = {
