@@ -30,5 +30,5 @@ const deleteMessage = async (id) => {
 module.exports = {
     getMessagesBetweenUsers,
     createMessage,
-    deleteMessage,
+    deleteMessage
 };

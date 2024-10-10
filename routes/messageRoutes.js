@@ -11,15 +11,22 @@ router.get('/conversation', async (req, res) => {
         return res.status(400).json({ error: 'Missing userId1 or userId2' });
     }
 
-    console.log(`Request for messages between userId1: ${userId1} and userId2: ${userId2}`);
+    console.log(
+        `Request for messages between userId1: ${userId1} and userId2: ${userId2}`
+    );
 
     try {
         // Appel à la fonction DAO pour récupérer les messages
-        const messages = await messageDao.getMessagesBetweenUsers(userId1, userId2);
+        const messages = await messageDao.getMessagesBetweenUsers(
+            userId1,
+            userId2
+        );
 
         // Vérifie s'il y a des messages à renvoyer
         if (!messages || messages.length === 0) {
-            return res.status(404).json({ message: 'No messages found between these users.' });
+            return res
+                .status(404)
+                .json({ message: 'No messages found between these users.' });
         }
 
         // Réponse avec les messages récupérés
@@ -39,11 +46,17 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Paramètres manquants.' });
     }
 
-    console.log(`Creating message from userIdSource: ${userIdSource} to userIdDestinataire: ${userIdDestinataire}`);
+    console.log(
+        `Creating message from userIdSource: ${userIdSource} to userIdDestinataire: ${userIdDestinataire}`
+    );
 
     try {
         // Appel à la fonction DAO pour créer un message
-        const newMessage = await messageDao.createMessage(userIdSource, userIdDestinataire, message);
+        const newMessage = await messageDao.createMessage(
+            userIdSource,
+            userIdDestinataire,
+            message
+        );
 
         // Réponse avec le message nouvellement créé
         res.status(201).json(newMessage);
