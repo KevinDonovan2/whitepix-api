@@ -1,8 +1,26 @@
 const pool = require('../db/db');
 
-// Récupérer toutes les publications
+// Récupérer toutes les publications avec les informations des utilisateurs
 const getPublications = async () => {
-  const result = await pool.query('SELECT * FROM publications ORDER BY id DESC;');
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.user_id,
+      u.name AS user_name,
+      u.photo AS user_photo,  -- Récupérer l'image de profil
+      p.reaction,
+      p.description,
+      p.creation_date,
+      p.creation_time,
+      p.photo_url,
+      p.comment
+    FROM 
+      publications p
+    JOIN 
+      users u ON p.user_id = u.id
+    ORDER BY 
+      p.id DESC;
+  `);
   return result.rows;
 };
 
@@ -13,10 +31,10 @@ const getPublicationById = async (id) => {
 };
 
 // Créer une nouvelle publication
-const createPublication = async (user_id, reaction, description, creation_date, creation_time, photo_url, comment) => {
+const createPublication = async (user_id, user_name, reaction, description, creation_date, creation_time, photo_url, comment) => {
   const result = await pool.query(
-    'INSERT INTO publications (user_id, reaction, description, creation_date, creation_time, photo_url, comment) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-    [user_id, reaction, description, creation_date, creation_time, photo_url, comment]
+    'INSERT INTO publications (user_id, user_name, reaction, description, creation_date, creation_time, photo_url, comment) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+    [user_id, user_name, reaction, description, creation_date, creation_time, photo_url, comment]
   );
   return result.rows[0];
 };
