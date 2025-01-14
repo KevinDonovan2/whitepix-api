@@ -1,28 +1,28 @@
+require('dotenv').config();
 const { Pool } = require('pg');
 
-const dbName = 'whitepix';
-
+// Configuration de la connexion au pool PostgreSQL
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    password: '2023',
-    port: 5432,
-    database: dbName
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME
 });
 
 // Fonction pour vérifier et créer les tables si elles n'existent pas
 const createTablesIfNotExists = async () => {
-    const tableCheckQuery = `
+  const tableCheckQuery = `
     SELECT EXISTS (
       SELECT FROM pg_tables 
       WHERE tablename = $1
     ) AS exists;
   `;
 
-    const tablesToCheck = [
-        {
-            name: 'users',
-            createQuery: `
+  const tablesToCheck = [
+    {
+      name: 'users',
+      createQuery: `
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
@@ -32,10 +32,10 @@ const createTablesIfNotExists = async () => {
           photo TEXT
         );
       `
-        },
-        {
-            name: 'messages',
-            createQuery: `
+    },
+    {
+      name: 'messages',
+      createQuery: `
         CREATE TABLE IF NOT EXISTS messages (
           id SERIAL PRIMARY KEY,
           user_id_source INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -44,10 +44,10 @@ const createTablesIfNotExists = async () => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `
-        },
-        {
-            name: 'publications',
-            createQuery: `
+    },
+    {
+      name: 'publications',
+      createQuery: `
         CREATE TABLE IF NOT EXISTS publications (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -60,57 +60,42 @@ const createTablesIfNotExists = async () => {
           comment TEXT
         );
       `
-        }
-    ];
-
-    try {
-        for (const table of tablesToCheck) {
-            const result = await pool.query(tableCheckQuery, [table.name]);
-            const tableExists = result.rows[0].exists;
-
-            if (!tableExists) {
-                console.log(`Création de la table '${table.name}'...`);
-                await pool.query(table.createQuery);
-                console.log(`Table '${table.name}' créée avec succès.`);
-            } else {
-                console.log(`La table '${table.name}' existe déjà.`);
-            }
-        }
-    } catch (err) {
-        console.error(
-            'Erreur lors de la vérification ou de la création des tables:',
-            err.stack
-        );
     }
+  ];
+
+  try {
+    for (const table of tablesToCheck) {
+      const result = await pool.query(tableCheckQuery, [table.name]);
+      const tableExists = result.rows[0].exists;
+
+      if (!tableExists) {
+        console.log(`Création de la table '${table.name}'...`);
+        await pool.query(table.createQuery);
+        console.log(`Table '${table.name}' créée avec succès.`);
+      } else {
+        console.log(`La table '${table.name}' existe déjà.`);
+      }
+    }
+  } catch (err) {
+    console.error(
+      'Erreur lors de la vérification ou de la création des tables:',
+      err.stack
+    );
+  }
 };
 
-// Vérifie si la base de données existe et la crée si nécessaire
-const createDatabaseIfNotExists = async () => {
-    const client = new Pool({
-        user: 'postgres',
-        host: 'localhost',
-        password: '2023',
-        port: 5432
-    });
-
-    try {
-        await client.query(`CREATE DATABASE ${dbName}`);
-        console.log(`Base de données '${dbName}' créée avec succès.`);
-    } catch (err) {
-        if (err.code !== '42P04') {
-            console.error(
-                'Erreur lors de la création de la base de données:',
-                err.stack
-            );
-        } else {
-            console.log(`La base de données '${dbName}' existe déjà.`);
-        }
-    } finally {
-        await client.end();
-        await createTablesIfNotExists();
-    }
+// Initialisation de la base de données
+const initDatabase = async () => {
+  try {
+    await createTablesIfNotExists();
+    console.log('Initialisation de la base de données terminée.');
+  } catch (err) {
+    console.error('Erreur lors de l\'initialisation de la base de données:', err.stack);
+  }
 };
 
-createDatabaseIfNotExists();
+// Exécute l'initialisation de la base de données
+initDatabase();
 
+// Export du pool pour l'utiliser dans d'autres fichiers
 module.exports = pool;
